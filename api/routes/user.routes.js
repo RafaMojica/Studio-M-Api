@@ -22,6 +22,7 @@ const {
   classUsers,
   projectUser,
   pdfCertificate,
+  boughtCourses,
 } = require("../controllers/user.controller");
 const {
   validateRegister,
@@ -124,6 +125,13 @@ router.get(
   validateMongoID,
   validateFields,
   pdfCertificate
+);
+
+router.get(
+  "/boughtCourses/:userId",
+  validateMongoID,
+  validateFields,
+  boughtCourses
 );
 
 module.exports = router;

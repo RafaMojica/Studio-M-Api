@@ -344,3 +344,19 @@ exports.pdfCertificate = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
+// controlador que me traiga los cursos comprados por el usuario
+exports.boughtCourses = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).send("user not found");
+
+    const boughtCourses = user.course.map((course) => course.courseId);
+    res.send(boughtCourses);
+  } catch (error) {
+    console.error(error);
+    res.sendStatus(500);
+  }
+};

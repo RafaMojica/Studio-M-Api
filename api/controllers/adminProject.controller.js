@@ -72,7 +72,7 @@ exports.updateProject = async (req, res) => {
   }
 };
 
-// Cambiar el estado del proyecto (aprobado o desaprobado), crear certificado y PDF del certificado
+// Cambiar el estado del proyecto (aprobado o desaprobado), crear certificado.
 exports.updateStatusProject = async (req, res) => {
   const { projectId } = req.params;
   const { status, userId, courseId } = req.body;
@@ -91,70 +91,75 @@ exports.updateStatusProject = async (req, res) => {
     const course = await Course.findById(courseId);
     if (!course) return res.status(404).send("Course not found");
 
+    // aca crea el modelo certificado, con datos de curso y usuario. El path queda vacio. El path se elimino del modelo, no es necesario.
     const certificate = await Certificate.create({
       userId,
       courseId,
       description:
         "Ha realizado y completado con éxito su curso en by M Studio, cumpliendo con todos los requisitos académicos exigidos",
-      pdfPath: " ",
+      // pdfPath: " ",
     });
 
-    const browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      defaultViewport: null,
-    });
-    const page = await browser.newPage();
+    //* TODO ESTO LO PASO AL CONTROLLER QUE SE ENCARGA DE DESCARGAR EL CERTIFICADO
+    // const browser = await puppeteer.launch({
+    //   args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    //   defaultViewport: null,
+    //   // ver si esto queda o no por error de warning
+    //   headless: "new",
+    // });
 
-    const basePath = path.resolve(__dirname, "..");
-    const mysteryFont = fs
-      .readFileSync(
-        path.join(basePath, "assets/fonts/MysteryMixed-base64.txt"),
-        "utf8"
-      )
-      .trim();
-    const msgothicFont = fs
-      .readFileSync(
-        path.join(basePath, "assets/fonts/ms-pgothic-base64.txt"),
-        "utf8"
-      )
-      .trim();
-    const paperBackground = fs
-      .readFileSync(path.join(basePath, "assets/images/background.txt"), "utf8")
-      .trim();
-    const signature = fs
-      .readFileSync(path.join(basePath, "assets/images/signature.txt"), "utf8")
-      .trim();
+    // const page = await browser.newPage();
 
-    const formattedDate = new Intl.DateTimeFormat("es-ES", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }).format(certificate.createdAt);
-    const certificateHTML = await certificateTemplate(
-      user,
-      course,
-      formattedDate,
-      mysteryFont,
-      msgothicFont,
-      paperBackground,
-      signature
-    );
+    // const basePath = path.resolve(__dirname, "..");
+    // const mysteryFont = fs
+    //   .readFileSync(
+    //     path.join(basePath, "assets/fonts/MysteryMixed-base64.txt"),
+    //     "utf8"
+    //   )
+    //   .trim();
+    // const msgothicFont = fs
+    //   .readFileSync(
+    //     path.join(basePath, "assets/fonts/ms-pgothic-base64.txt"),
+    //     "utf8"
+    //   )
+    //   .trim();
+    // const paperBackground = fs
+    //   .readFileSync(path.join(basePath, "assets/images/background.txt"), "utf8")
+    //   .trim();
+    // const signature = fs
+    //   .readFileSync(path.join(basePath, "assets/images/signature.txt"), "utf8")
+    //   .trim();
 
-    await page.setContent(certificateHTML);
-    await page.waitForSelector("img");
-    await page.emulateMediaType("print");
+    // const formattedDate = new Intl.DateTimeFormat("es-ES", {
+    //   day: "numeric",
+    //   month: "long",
+    //   year: "numeric",
+    // }).format(certificate.createdAt);
+    // const certificateHTML = await certificateTemplate(
+    //   user,
+    //   course,
+    //   formattedDate,
+    //   mysteryFont,
+    //   msgothicFont,
+    //   paperBackground,
+    //   signature
+    // );
 
-    const pdfPath = path.resolve(
-      `certificates/certificate_${userId}_${courseId}.pdf`
-    );
-    const directoryPath = path.dirname(pdfPath);
-    fs.mkdirSync(directoryPath, { recursive: true });
-    const options = { path: pdfPath, format: "A4" };
+    // await page.setContent(certificateHTML);
+    // await page.waitForSelector("img");
+    // await page.emulateMediaType("print");
 
-    certificate.pdfPath = pdfPath.toString();
+    // const pdfPath = path.resolve(
+    //   `certificates/certificate_${userId}_${courseId}.pdf`
+    // );
+    // const directoryPath = path.dirname(pdfPath);
+    // fs.mkdirSync(directoryPath, { recursive: true });
+    // const options = { path: pdfPath, format: "A4" };
 
-    await page.pdf(options);
-    await browser.close();
+    // certificate.pdfPath = pdfPath.toString();
+
+    // await page.pdf(options);
+    // await browser.close();
 
     await certificate.save();
     await projectToUpdate.save();
@@ -163,11 +168,10 @@ exports.updateStatusProject = async (req, res) => {
       user.mail,
       "Proyecto Aprobado",
       { name: user.name },
-      "./template/projectApproved.handlebars",
-      pdfPath
+      "./template/projectApproved.handlebars"
     );
 
-    res.status(200).json({ pdfPath });
+    res.sendStatus(200);
   } catch (error) {
     console.error(error);
     res.sendStatus(500);

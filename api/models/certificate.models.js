@@ -19,10 +19,10 @@ const CertificateSchema = new Schema({
     required: [true, "Course is required"],
     ref: "User",
   },
-  pdfPath: {
-    type: String,
-    required: [true, "PDF path is required"],
-  },
+  // pdfPath: {
+  //   type: String,
+  //   required: [true, "PDF path is required"],
+  // },
 });
 
 const Certificate = model("Certificate", CertificateSchema);

@@ -11,6 +11,9 @@ const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const sendEmail = require("../utils/sendEmail");
 const path = require("path");
+const puppeteer = require("puppeteer");
+const fs = require("fs");
+const certificateTemplate = require("../utils/template/certificateTemplate");
 const cloudinary = require("cloudinary").v2;
 cloudinary.config(process.env.CLOUDINARY_URL);
 
@@ -337,8 +340,71 @@ exports.pdfCertificate = async (req, res) => {
     const certificate = await Certificate.findOne({ userId, courseId });
     if (!certificate) return res.status(404).send("Certificate not found");
 
-    const pdfPath = certificate.pdfPath;
-    res.download(path.resolve(pdfPath));
+    const user = await User.findById(userId);
+    !user && res.status(404).send("user not found");
+
+    const course = await Course.findById(courseId);
+    if (!course) return res.status(404).send("Course not found");
+
+    //* aca voy a probar poder descargar el certificado de otra forma:
+    const browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      defaultViewport: null,
+      headless: "new",
+    });
+
+    const page = await browser.newPage();
+
+    const basePath = path.resolve(__dirname, "..");
+    const mysteryFont = fs
+      .readFileSync(
+        path.join(basePath, "assets/fonts/MysteryMixed-base64.txt"),
+        "utf8"
+      )
+      .trim();
+    const msgothicFont = fs
+      .readFileSync(
+        path.join(basePath, "assets/fonts/ms-pgothic-base64.txt"),
+        "utf8"
+      )
+      .trim();
+    const paperBackground = fs
+      .readFileSync(path.join(basePath, "assets/images/background.txt"), "utf8")
+      .trim();
+    const signature = fs
+      .readFileSync(path.join(basePath, "assets/images/signature.txt"), "utf8")
+      .trim();
+    const formattedDate = new Intl.DateTimeFormat("es-ES", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(certificate.createdAt);
+
+    const certificateHTML = certificateTemplate(
+      user,
+      course,
+      formattedDate,
+      mysteryFont,
+      msgothicFont,
+      paperBackground,
+      signature
+    );
+
+    await page.setContent(certificateHTML);
+    await page.waitForSelector("img");
+    await page.emulateMediaType("print");
+
+    // generar el PDF
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+    });
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${userId}_${courseId}_certificate.pdf"`
+    );
+    res.status(200).send(pdfBuffer);
   } catch (error) {
     console.error(error);
     res.sendStatus(500);

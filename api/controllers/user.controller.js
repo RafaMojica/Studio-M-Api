@@ -175,7 +175,7 @@ exports.resetPassword = async (req, res) => {
 //Controlador para actualizar la imagen
 exports.updateImgUser = async (req, res) => {
   try {
-    const { mail } = req.body;
+    const { mail } = req.params;
     const user = await User.findOne({ mail });
     if (!user) return res.status(404).send("User not found");
     if (user.profileImg) {

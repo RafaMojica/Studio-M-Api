@@ -68,7 +68,12 @@ router.post("/userCourses", validateEmail, validateFields, userCourses);
 router.get("/:userId", validateMongoID, validateFields, userData);
 
 //ruta actualizar imagen
-router.put("/updateImg", validateUploadUser, validateFields, updateImgUser);
+router.put(
+  "/updateImg/:mail",
+  validateUploadUser,
+  validateFields,
+  updateImgUser
+);
 
 // Ruta para actualizar el estado de la clase
 router.put(

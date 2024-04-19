@@ -9,6 +9,10 @@ const validateUploadCourse = [
   validateFileExtension,
   check("id", "id is not type mongo").isMongoId(),
 ];
-const validateUploadUser = [validateFileUpload, validateFileExtension];
+const validateUploadUser = [
+  validateFileUpload,
+  validateFileExtension,
+  check("mail", "The email is not valid").isEmail(),
+];
 
 module.exports = { validateUploadCourse, validateUploadUser };

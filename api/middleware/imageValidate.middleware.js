@@ -6,7 +6,7 @@ const validateFileUpload = (req, res, next) => {
 };
 
 const validateFileExtension = (req, res, next) => {
-  const validateExtensions = ["png", "jpg", "jpeg", "gif"];
+  const validateExtensions = ["png", "jpg", "jpeg", "gif", "avif"];
   const { archivo } = req.files;
   const extension = archivo.name.split(".").pop();
 

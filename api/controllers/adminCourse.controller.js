@@ -62,9 +62,6 @@ exports.updateImgCourse = async (req, res) => {
       await course.save();
       res.status(200).send(course);
     }
-    /* console.log(condicion);
-
-    res.send(condicion); */
   } catch (err) {
     res.status(500).send(err);
   }

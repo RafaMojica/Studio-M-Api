@@ -14,17 +14,84 @@ exports.addCourse = async (req, res) => {
 exports.updateImgCourse = async (req, res) => {
   try {
     const { id } = req.params;
+    const { condicion } = req.body;
+    const course = await Course.findById(id);
+    if (!course) return res.status(404).send("Course not found");
+    if (condicion === "1") {
+      return res.send("no files to update");
+    } else if (condicion === "2") {
+      if (course.courseImg_url) {
+        const nameFile = course.courseImg_url.split("/").pop();
+        const [public_id] = nameFile.split(".");
+        await cloudinary.uploader.destroy(public_id);
+      }
+      const file1 = req.files.archivo;
+      const fileUpload1 = await cloudinary.uploader.upload(file1.tempFilePath);
+      course.courseImg_url = fileUpload1.secure_url;
+      await course.save();
+      res.status(200).send(course);
+    } else if (condicion === "3") {
+      if (course.courseImgSmall_url) {
+        const nameFile = course.courseImgSmall_url.split("/").pop();
+        const [public_id] = nameFile.split(".");
+        await cloudinary.uploader.destroy(public_id);
+      }
+      const file2 = req.files.archivo2;
+      const fileUpload2 = await cloudinary.uploader.upload(file2.tempFilePath);
+      course.courseImgSmall_url = fileUpload2.secure_url;
+      await course.save();
+      res.status(200).send(course);
+    } else if (condicion === "4") {
+      if (course.courseImg_url) {
+        const nameFile = course.courseImg_url.split("/").pop();
+        const [public_id] = nameFile.split(".");
+        await cloudinary.uploader.destroy(public_id);
+      }
+      if (course.courseImgSmall_url) {
+        const nameFile = course.courseImgSmall_url.split("/").pop();
+        const [public_id] = nameFile.split(".");
+        await cloudinary.uploader.destroy(public_id);
+      }
+      const file1 = req.files.archivo;
+      const file2 = req.files.archivo2;
+      const fileUpload1 = await cloudinary.uploader.upload(file1.tempFilePath);
+      course.courseImg_url = fileUpload1.secure_url;
+      const fileUpload2 = await cloudinary.uploader.upload(file2.tempFilePath);
+      course.courseImgSmall_url = fileUpload2.secure_url;
+
+      await course.save();
+      res.status(200).send(course);
+    }
+  } catch (err) {
+    res.status(500).send(err);
+  }
+};
+
+exports.createImgCourse = async (req, res) => {
+  try {
+    const { id } = req.params;
+
     const course = await Course.findById(id);
     if (!course) return res.status(404).send("Course not found");
     //limpiar imagenes previas
-    if (course.courseImg_url) {
+    /* if (course.courseImg_url) {
       const nameFile = course.courseImg_url.split("/").pop();
       const [public_id] = nameFile.split(".");
       await cloudinary.uploader.destroy(public_id);
     }
-    const { tempFilePath } = req.files.archivo;
-    const { secure_url } = await cloudinary.uploader.upload(tempFilePath);
-    course.courseImg_url = secure_url;
+    if (course.courseImgSmall_url) {
+      const nameFile = course.courseImgSmall_url.split("/").pop();
+      const [public_id] = nameFile.split(".");
+      await cloudinary.uploader.destroy(public_id);
+    } */
+
+    console.log(req.files);
+    const file1 = req.files.archivo;
+    const file2 = req.files.archivo2;
+    const fileUpload1 = await cloudinary.uploader.upload(file1.tempFilePath);
+    course.courseImg_url = fileUpload1.secure_url;
+    const fileUpload2 = await cloudinary.uploader.upload(file2.tempFilePath);
+    course.courseImgSmall_url = fileUpload2.secure_url;
 
     await course.save();
     res.status(200).send(course);

@@ -5,6 +5,7 @@ const {
   addCourse,
   updateCourse,
   allCourses,
+  createImgCourse,
   updateImgCourse,
 } = require("../controllers/adminCourse.controller");
 const {
@@ -22,11 +23,18 @@ router.put("/:id", validateMongoIdCourse, validateFields, updateCourse);
 
 //ruta actualizar imagen
 router.put(
-  "/updateImg/:id",
+  "/createImg/:id",
   validateUploadCourse,
+  validateFields,
+  createImgCourse
+);
+router.put(
+  "/updateImg/:id",
+  /* validateUploadCourse, */
   validateFields,
   updateImgCourse
 );
+
 //enable disable curso
 router.put(
   "/enable-disable/:id",

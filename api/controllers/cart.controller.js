@@ -1,4 +1,5 @@
 const { Cart, User, Course, Coupon, Favorite } = require("../models");
+const sendEmail = require("../utils/sendEmail");
 
 // Agrear Curso al carrito de compra
 const addCart = async (req, res) => {
@@ -80,7 +81,7 @@ const cartCourses = async (req, res) => {
   try {
     const cart = await Cart.findOne({ userId }).populate("courseId");
     if (!cart) return res.status(200).send([]);
-    
+
     const favoritesUser = await Favorite.findOne({ userId });
 
     const courseUpdate = cart.courseId.map((course) => {
@@ -140,6 +141,18 @@ const confirmBuyCart = async (req, res) => {
     user.course.push(...courseData);
     await user.save();
 
+    sendEmail(
+      user.mail,
+      "Compra confirmada",
+      {
+        name: user.name,
+        courseName: cart.courseId[0].courseLongTitle,
+        precio: cart.totalAmount,
+        descuento: cart.totalDiscount,
+        total: `${Number(cart.totalAmount - cart.totalDiscount)}`,
+      },
+      "./template/purchasedConfirm.handlebars"
+    );
     cart.deleteOne();
 
     return res.status(200).send("Purchase confirmed");

@@ -22,14 +22,14 @@ exports.allProjects = async (req, res) => {
         status,
         project_url,
         comment,
-        name: userId.name,
-        lastname: userId.lastname,
-        mail: userId.mail,
+        name: userId?.name || "no existe",
+        lastname: userId?.lastname || "no existe",
+        mail: userId?.mail || "no existe",
         courseShortTitle: courseId.courseShortTitle,
         courseLongTitle: courseId.courseLongTitle,
         projectsTitle: courseId.projectsTitle,
         courseId: courseId._id,
-        userId: userId._id,
+        userId: userId?._id || "no existe",
       };
     });
 
